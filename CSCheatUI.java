@@ -31,7 +31,7 @@ void onLoad() {
         fakeFpsOptions[i] = "\u00A7a" + (i + 1) + "x";
     }
 
-    modules.registerDescription("dev. M1CK3Y");
+    modules.registerDescription("v1.0.1 dev. M1CK3Y");
     modules.registerSlider("Theme", "", 0, themeOptions);
     modules.registerSlider("Watermark Style", "", 0, watermarkStyles);
     modules.registerSlider("Animation Time", "", 0, animTimeOptions);
