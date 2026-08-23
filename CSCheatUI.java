@@ -79,6 +79,14 @@ long[] pendingTime = new long[MAX_PENDING];
 
 void addPendingHit(Entity target, String name, String hitbox, float health) {
     long now = client.time();
+    // If same entity already pending, just update hitbox and time (keep original health baseline)
+    for (int i = 0; i < MAX_PENDING; i++) {
+        if (pendingEntity[i] != null && pendingEntity[i] == target) {
+            pendingHitbox[i] = hitbox;
+            pendingTime[i] = now;
+            return;
+        }
+    }
     for (int i = MAX_PENDING - 1; i > 0; i--) {
         pendingEntity[i] = pendingEntity[i-1];
         pendingName[i] = pendingName[i-1];
@@ -101,7 +109,10 @@ void checkPendingHits() {
             if (now - pendingTime[i] > 500) {
                 // Timeout: force log to ensure it displays even if server doesn't update health
                 addHit(pendingName[i], pendingHitbox[i], "2.0", String.format("%.1f", pendingHealth[i] - 2.0f));
-                pendingEntity[i] = null; 
+                // Clear all pending entries for this entity
+                for (int j = 0; j < MAX_PENDING; j++) {
+                    if (pendingEntity[j] == target) pendingEntity[j] = null;
+                }
                 continue;
             }
             
@@ -112,7 +123,10 @@ void checkPendingHits() {
                 // If health dropped, the server registered the damage!
                 if (damage > 0 && damage < 20.0f) { 
                     addHit(pendingName[i], pendingHitbox[i], String.format("%.1f", damage), String.format("%.1f", currentHealth));
-                    pendingEntity[i] = null; // handled
+                    // Clear all pending entries for this entity
+                    for (int j = 0; j < MAX_PENDING; j++) {
+                        if (pendingEntity[j] == target) pendingEntity[j] = null;
+                    }
                 } else if (damage < 0) {
                     // target healed (e.g. potion), reset baseline to new health
                     pendingHealth[i] = currentHealth;
@@ -120,7 +134,10 @@ void checkPendingHits() {
             } catch (Exception e) {
                 // Wrapper doesn't support getHealth, force log immediately
                 addHit(pendingName[i], pendingHitbox[i], "2.0", String.format("%.1f", pendingHealth[i] - 2.0f));
-                pendingEntity[i] = null;
+                // Clear all pending entries for this entity
+                for (int j = 0; j < MAX_PENDING; j++) {
+                    if (pendingEntity[j] == target) pendingEntity[j] = null;
+                }
             }
         }
     }
